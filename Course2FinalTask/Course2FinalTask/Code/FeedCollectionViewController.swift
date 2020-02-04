@@ -7,6 +7,8 @@ class FeedCollectionViewController: UIViewController, UICollectionViewDataSource
     
     var feed: [Post] = []
     
+    var currentIndexPath: IndexPath!
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
@@ -20,6 +22,19 @@ class FeedCollectionViewController: UIViewController, UICollectionViewDataSource
         let cell = feedCollectionView.dequeueCell(of: FeedCollectionViewCell.self, for: indexPath)
         cell.configure(with: feed[indexPath.item])
         cell.likeButtonOutlet.addTarget(self, action: #selector(likeButtonTap), for: .touchUpInside)
+        
+        let likesLabelTapGesture = UITapGestureRecognizer(target: self, action: #selector(self.likesLabelTap))
+        likesLabelTapGesture.cancelsTouchesInView = false
+        cell.likesLabel.isUserInteractionEnabled = true
+        cell.likesLabel.addGestureRecognizer(likesLabelTapGesture)
+        
+        let avatarTapGesture = UITapGestureRecognizer(target: self, action: #selector(self.profileTap))
+        let nameTapGesture = UITapGestureRecognizer(target: self, action: #selector(self.profileTap))
+        cell.avatarImageView.isUserInteractionEnabled = true
+        cell.nameAndDateLabel.isUserInteractionEnabled = true
+        cell.nameAndDateLabel.addGestureRecognizer(nameTapGesture)
+        cell.avatarImageView.addGestureRecognizer(avatarTapGesture)
+        
         cell.delegate = self
         cell.selectedAtIndex = indexPath
         
@@ -47,8 +62,21 @@ class FeedCollectionViewController: UIViewController, UICollectionViewDataSource
     }
     
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let segueIdentifier = segue.identifier ?? ""
+        if segueIdentifier == "showLikesSegue" {
+            if let vc = segue.destination as? FollowViewController {
+                vc.postId = feed[currentIndexPath.item].id
+            }
+        } else if segueIdentifier == "profileSegue" {
+            if let vc = segue.destination as? ProfileViewController {
+                vc.currentUser = DataProviders.shared.usersDataProvider.user(with: feed[currentIndexPath.item].author)
+            }
+        }
+    }
+    
+    
     @objc func likeButtonTap(sender: UIButton){
-        //        print("likeButton")
         if let indexPath = feedCollectionView?.indexPath(for: ((sender.superview?.superview) as! FeedCollectionViewCell)) {
             if !feed[indexPath.item].currentUserLikesThisPost {
                 feed[indexPath.item].likedByCount += 1
@@ -59,6 +87,24 @@ class FeedCollectionViewController: UIViewController, UICollectionViewDataSource
             }
             feedCollectionView.reloadData()
         }
+    }
+    
+    @objc func likesLabelTap(sender: UITapGestureRecognizer) {
+        
+        if let indexPath = self.feedCollectionView?.indexPathForItem(at: sender.location(in: self.feedCollectionView)) {
+            currentIndexPath = indexPath
+        }
+        
+        performSegue(withIdentifier: "showLikesSegue", sender: feedCollectionView)
+    }
+    
+    
+    @objc func profileTap(sender: UITapGestureRecognizer) {
+        if let indexPath = self.feedCollectionView?.indexPathForItem(at: sender.location(in: self.feedCollectionView)) {
+            currentIndexPath = indexPath
+        }
+        
+        performSegue(withIdentifier: "profileSegue", sender: feedCollectionView)
     }
     
     
@@ -150,11 +196,9 @@ extension FeedCollectionViewController: FeedCollectionViewCellDelegate {
             } else {
                 return false
             }
-            
         }
         item?.likedByCount += 1
     }
-    
 }
 
 extension String {

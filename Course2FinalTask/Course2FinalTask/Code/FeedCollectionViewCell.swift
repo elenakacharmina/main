@@ -47,7 +47,6 @@ class FeedCollectionViewCell: UICollectionViewCell {
         imageBigLike.translatesAutoresizingMaskIntoConstraints = false
         imageBigLike.centerYAnchor.constraint(equalTo: postImageView.centerYAnchor).isActive = true
         imageBigLike.centerXAnchor.constraint(equalTo: postImageView.centerXAnchor).isActive = true
-        //        imageBigLike.isHidden = true
         imageBigLike.layer.opacity = 0
     }
     
@@ -63,7 +62,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
     func configure(with post: Post) {
         idCurrent = post.id
         avatarImageView.image = post.authorAvatar
-        nameAndDateLabel.text = post.authorUsername //+ String(post.createdTime)
+        nameAndDateLabel.text = post.authorUsername
         postImageView.image = post.image
         if post.currentUserLikesThisPost {
             likeButtonOutlet.tintColor = .systemBlue
@@ -85,7 +84,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
         postImageView.isUserInteractionEnabled = true
         
         let tapDouble = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        //tapDouble.delegate = self
+        
         tapDouble.numberOfTapsRequired = 2
         postImageView.addGestureRecognizer(tapDouble)
         
@@ -118,13 +117,13 @@ class FeedCollectionViewCell: UICollectionViewCell {
     @objc func handleTap(gesture: UITapGestureRecognizer) {
         let firstAnimDuration: TimeInterval = 0.1
         UIView.animate(withDuration: firstAnimDuration, delay: 0, options: [.curveLinear], animations: {
-            //            print("animation 1")
+            
             self.imageBigLike.layer.opacity = 1
         }) { (completed) in
             
             let secondAnimDuration: TimeInterval = 0.3
             UIView.animate(withDuration: secondAnimDuration, delay: 0.2, options: [.curveEaseOut], animations: {
-                //                print("animation 2")
+                
                 self.imageBigLike.layer.opacity = 0
             })
             { (completed) in
